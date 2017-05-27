@@ -1,0 +1,84 @@
+html,
+body {
+    width: 100%;
+    height: 100%;
+    background: black;
+}
+
+.container {
+    width: 50%;
+    min-width: 640px;
+    height: 100%;
+    margin: 0 auto;
+    position: relative;
+}
+
+.container .cav-wrap {
+    width: 100%;
+    height: calc(100% - 170px);
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 2;
+}
+
+.container .cav-wrap canvas {
+    position: absolute;
+    top: 100px;
+    left: 0px;
+}
+
+.mask-wrap {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+.container .mask-wrap .top-info {
+    width: 200px;
+    height: 100px;
+    margin: 0 auto;
+}
+
+.mask-wrap .aim-at {
+    width: 100%;
+    height: 60px;
+    position: absolute;
+    top: 50%;
+    left: 0px;
+}
+
+.mask-wrap .aim-at img {
+    height: 60px;
+    margin: 0 auto;
+}
+
+.pass-film {
+    width: 100%;
+    height: 100%;
+    display: none;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 3;
+}
+
+.ctrls-wrap {
+    position: absolute;
+    bottom: 0px;
+    left: 0px;
+    z-index: 4;
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 170px
+}
+
+.main-ctrl {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 10px; 
+    border-radius: 50%;
+}
