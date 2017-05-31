@@ -3,6 +3,7 @@
  * 
  */
 class render3D {
+    
     constructor(opt) {
         if (opt)
             this.proxy(opt)
@@ -18,6 +19,7 @@ class render3D {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(800, 1600);
         this.renderer.render(this.scene, this.camera)
+        this.addEvent()
     }
     proxy(opt) {
         for (let i in opt) {
@@ -61,7 +63,8 @@ class render3D {
         this.scene.add(dirlight)
     }
     addEvent() {
-
+        bindEvent('body', 'mousemove', this.onMouseMove.bind(this))
+        bindEvent('body', 'resize', this.onWindowResize.bind(this))
     }
     render() {
         requestAnimationFrame(this.render);
@@ -146,6 +149,21 @@ class render3D {
         };
     }
 
+    onWindowResize() {
+        this.camera.aspect = 800 / window.innerHeight;
+        this.camera.updateProjectionMatrix();
+        this.renderer.setSize(800, window.innerHeight);
+    }
+    onMouseMove(e) {
+        if (!mouseDown) return;
+        e.preventDefault();
+        var deltaX = e.clientX - mouseX,
+            deltaY = e.clientY - mouseY;
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+        rotateScene(deltaX, deltaY);
+    }
+
 
 
 }
@@ -181,6 +199,7 @@ function initStage() {
 }
 
 
-function bindEvent() {
-
+function bindEvent(target, event, cb) {
+    let doc = document
+    doc.querySelector(target).addEventListener(event, cb)
 }
