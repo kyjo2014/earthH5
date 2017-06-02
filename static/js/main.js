@@ -183,12 +183,12 @@ class render3D {
         console.log(intersects)
 
         if (intersects.length > 0) {
-            this.addRay([new THREE.Vector3(-30, 39.8, 30),intersects[0].point])
+            this.addRay([new THREE.Vector3(0, -30, 60),intersects[0].point])
         }
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30),new THREE.Vector3(-30, 0, 0)]) {
 
-        var second_earth = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 60, 0.001);
+        var second_earth = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 60,0.1);
         var mat = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             transparent: false
