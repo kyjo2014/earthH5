@@ -1,7 +1,6 @@
 {
   "name": "earthh5",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -18,5 +17,6 @@
   "homepage": "https://github.com/kyjo2014/earthH5#readme",
   "dependencies": {
     "@types/three": "^0.84.8"
-  }
+  },
+  "description": ""
 }

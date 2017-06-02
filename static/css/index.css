@@ -10,24 +10,23 @@ body {
 .container {
     width: 50%;
     min-width: 640px;
-    height: 100%;
     margin: 0 auto;
     position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .container .cav-wrap {
     width: 100%;
-    height: calc(100% - 170px);
-    position: absolute;
+    position: relative;
     top: 0px;
     left: 0px;
     z-index: 2;
+    
 }
 
 .container .cav-wrap canvas {
-    position: absolute;
-    top: 100px;
-    left: 0px;
+   
 }
 
 .mask-wrap {
@@ -69,7 +68,7 @@ body {
 
 .ctrls-wrap {
     position: absolute;
-    bottom: 0px;
+    bottom: 260px;
     left: 0px;
     z-index: 4;
     display: flex;
@@ -83,4 +82,7 @@ body {
     height: 150px;
     margin-bottom: 10px; 
     border-radius: 50%;
+    background-color: white;
+    line-height: 150px;
+    text-align: center;
 }

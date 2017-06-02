@@ -3,7 +3,7 @@
  * 
  */
 class render3D {
-    
+
     constructor(opt) {
         if (opt)
             this.proxy(opt)
@@ -17,9 +17,9 @@ class render3D {
         })
         this.renderer.setClearColor(0xffffff, 0)
         this.renderer.setPixelRatio(window.devicePixelRatio);
-        this.renderer.setSize(800, 1600);
+        this.renderer.setSize(640, 1280);
         this.renderer.render(this.scene, this.camera)
-        this.addEvent()
+        // this.addEvent()
     }
     proxy(opt) {
         for (let i in opt) {
@@ -28,6 +28,7 @@ class render3D {
     }
     addEarth() {
         let earth_geometry = new THREE.SphereGeometry(20, 40, 40)
+
         let earth_texture = new THREE.TextureLoader().load("./static/texture/earth.jpeg");
         let earth_bump = new THREE.TextureLoader().load("./static/texture/bump.jpeg");
         let earth_specular = new THREE.TextureLoader().load("./static/texture/spec.jpeg");
@@ -38,20 +39,25 @@ class render3D {
             bumpMap: earth_bump,
             specularMap: earth_specular
         });
+
         this.earth = new THREE.Mesh(earth_geometry, earth_material);
+        this.earth.name = 'earth'
+
         this.scene.add(this.earth);
+        return this.earth
     }
     addCloud() {
         let cloud_texture = new THREE.TextureLoader().load('./static/texture/cloud.png');
         let cloud_geometry = new THREE.SphereGeometry(21, 32, 32);
         let cloud_material = new THREE.MeshBasicMaterial({
-            shininess: 10,
             map: cloud_texture,
             transparent: true,
             opacity: 0.8
         });
         this.cloud = new THREE.Mesh(cloud_geometry, cloud_material);
+        this.cloud.name = 'cloud'
         this.scene.add(this.cloud);
+        return this.cloud
     }
     addLight() {
         let dirlight = new THREE.DirectionalLight(0xffffff, 0.4)
@@ -63,29 +69,81 @@ class render3D {
         this.scene.add(dirlight)
     }
     addEvent() {
-        bindEvent('body', 'mousemove', this.onMouseMove.bind(this))
-        bindEvent('body', 'resize', this.onWindowResize.bind(this))
+        let mouseDown = false
+        let mouseX = 0
+        let mouseY = 0
+
+        function onMouseMove(evt) {
+            if (!mouseDown) return;
+            evt.preventDefault();
+            var deltaX = evt.clientX - mouseX,
+                deltaY = evt.clientY - mouseY;
+            mouseX = evt.clientX;
+            mouseY = evt.clientY;
+            this.rotateScene(deltaX, deltaY);
+        }
+
+        function onMouseDown(evt) {
+            evt.preventDefault();
+            mouseDown = true;
+            mouseX = evt.clientX;
+            mouseY = evt.clientY;
+        }
+
+        function onMouseUp(evt) {
+            evt.preventDefault();
+            mouseDown = false;
+        }
+
+        function goToPlace(e) {
+            // let timer = setTimeout(changeChapter, 1000)
+            let checkAim = this.checkAim.bind(this)
+            checkAim()
+
+            function changeChapter() {
+                let doc = document
+                let film = doc.querySelector('.pass-film')
+                film.style.display = 'block'
+                setTimeout(function () {
+                    film.style.display = "none"
+                    // scence.style.display = 'block'
+                }, 3000)
+
+            }
+
+
+        }
+
+        bindEvent('body', 'mouseup', onMouseUp.bind(this))
+        bindEvent('body', 'mousedown', onMouseDown.bind(this))
+        bindEvent('body', 'mousemove', onMouseMove.bind(this))
+        bindEvent('.main-ctrl', 'click', _debounce(goToPlace.bind(this), 200))
+        // bindEvent('body', 'resize', onWindowResize.bind(this))
     }
     render() {
         requestAnimationFrame(this.render);
         // stats.begin();
-
+        // this.addCube()
         this.rotateScene()
         // stats.end();
         this.renderer.render(this.scene, this.camera);
     }
-    rotateScene() {
-        this.earth.rotation.y += 0.005;
-        this.cloud.rotation.y += 0.002;
-        this.particles.rotation.y += 0.005;
+    rotateScene(deltaX, deltaY) {
+        this.rotateEarth(deltaX, deltaY)
+        this.rotateCloud(deltaX, deltaY)
+        this.rotateParticle(deltaX, deltaY)
     }
-    rotateEarth(deg) {
-        this.earth.rotation.y += deltaX / 300;
-        this.earth.rotation.x += deltaY / 300;
+    rotateEarth(deltaX = 1, deltaY = 1) {
+        this.earth.rotation.y += deltaX / 1000;
+        this.earth.rotation.x += deltaY / 1000;
     }
-    rotateCloud(deg) {
-        this.cloud.rotation.y += deltaX / 300;
-        this.cloud.rotation.x += deltaY / 300;
+    rotateCloud(deltaX = 2, deltaY = 2) {
+        this.cloud.rotation.y += deltaX / 1000;
+        this.cloud.rotation.x += deltaY / 1000;
+    }
+    rotateParticle(deltaX = 1, deltaY = 1) {
+        this.particles.rotation.y += deltaX / 1000
+        this.particles.rotation.x += deltaY / 1000
     }
     addPoint(points) {
         let pointGeo = new THREE.Geometry()
@@ -110,30 +168,53 @@ class render3D {
         this.particles = new THREE.Points(pointGeo, material);
         // this.particles.
         // this.particles.scale.set(0.3, 0.3, 0.3)
+        this.particles.name = 'coordinate'
         this.scene.add(this.particles);
     }
     checkAim() {
+        var raycaster = new THREE.Raycaster();
+        var mouse = new THREE.Vector2();
+        var INTERSECTED
+        mouse.x = 0
+        mouse.y = 0
+        raycaster.setFromCamera(mouse, this.camera);
+        var earth = this.scene.getObjectByName('earth')
+        var intersects = raycaster.intersectObjects([earth])
+        console.log(intersects)
 
+        if (intersects.length > 0) {
+            this.addRay([new THREE.Vector3(-30, 39.8, 30),intersects[0].point])
+        }
     }
-    testGeo() {
-        let testSphGeo = new THREE.SphereGeometry(33, 5, 5)
-        let sprite = new THREE.TextureLoader().load("./static/texture/sprite/i_galapagos.png");
-        let material = new THREE.PointsMaterial({
-            size: 90,
-            sizeAttenuation: false,
-            map: sprite,
-            alphaTest: 0.5,
+    addRay(points = [new THREE.Vector3(-30, 39.8, 30),new THREE.Vector3(-30, 0, 0)]) {
+
+        var second_earth = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 60, 0.001);
+        var mat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
             transparent: false
-        });
-
-        // material.color.setHSL(1.0, 0.3, 0.7);
-        let particles = new THREE.Points(testSphGeo, material);
-        console.log(testSphGeo.vertices)
-        particles.scale.x = 0.6
-        particles.scale.y = 0.6
-        particles.scale.z = 0.6
-        this.scene.add(particles);
+        })
+        this.second_earth = new THREE.Mesh(second_earth, mat)
+        this.scene.add(this.second_earth)
     }
+    // testGeo() {
+    //     let testSphGeo = new THREE.SphereGeometry(33, 5, 5)
+    //     let sprite = new THREE.TextureLoader().lod("./static/texture/sprite/i_galapagos.png");
+    //     let material = new THREE.PointsMaterial({
+    //         size: 90,
+    //         sizeAttenuation: false,
+    //         map: sprite,
+    //         alphaTest: 0.5,
+    //         transparent: false
+    //     });
+
+    //     // material.color.setHSL(1.0, 0.3, 0.7);
+    //     let particles = new THREE.Points(testSphGeo, material);
+    //     console.log(testSphGeo.vertices)
+    //     particles.scale.x = 0.6
+    //     particles.scale.y = 0.6
+    //     particles.scale.z = 0.6
+    //     this.scene.add(particles);
+    // }
 
     getPosition(lng, lat, alt) {
         var phi = (90 - lat) * (Math.PI / 180),
@@ -149,27 +230,26 @@ class render3D {
         };
     }
 
-    onWindowResize() {
-        this.camera.aspect = 800 / window.innerHeight;
-        this.camera.updateProjectionMatrix();
-        this.renderer.setSize(800, window.innerHeight);
-    }
-    onMouseMove(e) {
-        if (!mouseDown) return;
-        e.preventDefault();
-        var deltaX = e.clientX - mouseX,
-            deltaY = e.clientY - mouseY;
-        mouseX = e.clientX;
-        mouseY = e.clientY;
-        rotateScene(deltaX, deltaY);
-    }
+
 
 
 
 }
 
 
+function _debounce(fn, wait) {
+    var timer = null;
+    return function () {
+        clearTimeout(timer)
+        timer = setTimeout(() => {
+            fn()
+        }, wait)
+    }
+}
 
+function _log() {
+    console.log(1)
+}
 
 class App {
 
@@ -183,6 +263,7 @@ init()
 
 function initStage() {
     let stage = new render3D()
+
     stage.addEarth()
     stage.addLight()
     stage.addCloud()
@@ -193,6 +274,9 @@ function initStage() {
         lng: 116.427915,
         lat: 39.902895
     }])
+    // stage.addRay()
+    stage.addEvent()
+
     // stage.testGeo()
     stage.render()
 
