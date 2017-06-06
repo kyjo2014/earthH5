@@ -16,15 +16,14 @@ class render3D {
             alpha: true,
             canvas: document.querySelector('#stage')
         })
-        var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         //controls.enableDamping = true;
         //controls.dampingFactor = 0.25;
-        controls.rotateSpeed = 0.3;
-        controls.autoRotate = false;
-        controls.enableZoom = false;
-        controls.enablePan = false;
-
-        controls.enableZoom = false;
+        this.controls.rotateSpeed = 0.3;
+        this.controls.autoRotate = false;
+        this.controls.enableZoom = false;
+        this.controls.enablePan = false;
+        this.controls.enableZoom = false;
         this.renderer.setClearColor(0xffffff, 0)
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(640, 1280);
@@ -152,9 +151,10 @@ class render3D {
         this.renderer.render(this.scene, this.camera);
     }
     rotateScene(deltaX, deltaY) {
-        this.rotateEarth(deltaX, deltaY)
-        this.rotateCloud(deltaX, deltaY)
-        this.rotateParticle(deltaX, deltaY)
+        // this.rotateEarth(deltaX, deltaY)
+        // this.rotateCloud(deltaX, deltaY)
+        // this.rotateParticle(deltaX, deltaY)
+        this.scene.rotation.y += 0.001
     }
     rotateEarth(deltaX = 1, deltaY = 0) {
         this.earth.rotation.y += deltaX / 1000;
@@ -214,8 +214,10 @@ class render3D {
             return a.distance - b.distance
         })
         this.rotatePlaceToMid(res[0])
-
-
+    
+        console.log(this.controls)
+        // this.controls.saveState()
+        this.scene.rotation.y ++
 
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
