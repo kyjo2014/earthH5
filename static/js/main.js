@@ -136,7 +136,6 @@ class render3D {
 
         if (this.autoRotate && this.overrideRotate) {
             this.rotateScene()
-
         }
 
 
@@ -199,10 +198,15 @@ class render3D {
             this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
         }
         var res = getVerWorldPos(this.particles)
-        console.log(intersects)
         res.forEach(pos => {
-            console.log(getDis(pos,intersects[0].point))
+            console.log(pos.distance = getDis(pos, intersects[0].point))
         })
+        res.sort((a, b) => {
+            return a.distance - b.distance
+        })
+        this.rotatePlaceToMid(res[0])
+
+
 
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
@@ -231,6 +235,22 @@ class render3D {
     addHelper() {
         var axisHelper = new THREE.AxisHelper(100);
         this.scene.add(axisHelper);
+    }
+    rotatePlaceToMid(from) {
+        let rs = this.rotateScene.bind(this)
+        let r = getDis(from, {
+            x: 0,
+            y: 0,
+            z: 0
+        })
+        var deltaX = Math.asin(from.y / r)
+        var deltaY = Math.asin(( 5.57001407161917 - from.x ) / r)
+        // console.log(deltaX, deltaY)
+        console.log(from)
+        // console.log(from.x, from.y)
+        console.log(deltaY)
+        rs(deltaY*1000,deltaX*1000)
+        // rs(0, deltaY * 1000)
     }
 
 
