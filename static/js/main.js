@@ -198,8 +198,12 @@ class render3D {
         if (intersects.length > 0) {
             this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
         }
-        console.log(intersects, this.particles)
-        getVerWorldPos(this.particles)
+        var res = getVerWorldPos(this.particles)
+        console.log(intersects)
+        res.forEach(pos => {
+            console.log(getDis(pos,intersects[0].point))
+        })
+
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
 
@@ -288,28 +292,24 @@ function bindEvent(target, event, cb) {
 }
 
 /**
- * 获得世界坐标
+ * 获取顶点的世界坐标
  * 
  * @param {any} obj 
  * @returns 
  */
-function getWorldPos(obj) {
-    obj.updateMatrixWorld();
-    var vec = new THREE.Vector3();
-    vec.setFromMatrixPosition(obj.matrixWorld);
-    return {
-        x: vec.x,
-        y: vec.y,
-        z: vec.z
-    }; // Like this?
-}
-
 function getVerWorldPos(obj) {
     let geo = obj.geometry
     let vertices = []
     geo.vertices.forEach(vertice => {
-        console.log(vertice.clone().applyMatrix4(obj.matrixWorld))
+        //要把节点数据复制出来，不然会使得每次变换矩阵的时候都是使用了上次的位置
+        //而不是原始的位置
+        // console.log(vertice.clone().applyMatrix4(obj.matrixWorld))
         vertices.push(vertice.clone().applyMatrix4(obj.matrixWorld))
     })
     return vertices
+}
+
+
+function getDis(a, b) {
+    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2))
 }
