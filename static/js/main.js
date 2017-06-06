@@ -11,10 +11,20 @@ class render3D {
         this.scene = new THREE.Scene();
         this.camera = new THREE.PerspectiveCamera(45, 800 / 1600, 1, 1000);
         this.camera.position.z = 328;
+
         this.renderer = new THREE.WebGLRenderer({
             alpha: true,
             canvas: document.querySelector('#stage')
         })
+        var controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
+        //controls.enableDamping = true;
+        //controls.dampingFactor = 0.25;
+        controls.rotateSpeed = 0.3;
+        controls.autoRotate = false;
+        controls.enableZoom = false;
+        controls.enablePan = false;
+
+        controls.enableZoom = false;
         this.renderer.setClearColor(0xffffff, 0)
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(640, 1280);
@@ -119,9 +129,9 @@ class render3D {
 
         }
 
-        bindEvent('body', 'mouseup', onMouseUp.bind(this))
-        bindEvent('body', 'mousedown', onMouseDown.bind(this))
-        bindEvent('body', 'mousemove', onMouseMove.bind(this))
+        // bindEvent('body', 'mouseup', onMouseUp.bind(this))
+        // bindEvent('body', 'mousedown', onMouseDown.bind(this))
+        // bindEvent('body', 'mousemove', onMouseMove.bind(this))
         bindEvent('.main-ctrl', 'click', _debounce(goToPlace.bind(this), 200))
         bindEvent('.rotate-ctrl', 'click', function (e) {
             e.stopPropagation()
@@ -138,7 +148,6 @@ class render3D {
             this.rotateScene()
         }
 
-
         // stats.end();
         this.renderer.render(this.scene, this.camera);
     }
@@ -147,15 +156,15 @@ class render3D {
         this.rotateCloud(deltaX, deltaY)
         this.rotateParticle(deltaX, deltaY)
     }
-    rotateEarth(deltaX = 1, deltaY = 1) {
+    rotateEarth(deltaX = 1, deltaY = 0) {
         this.earth.rotation.y += deltaX / 1000;
         this.earth.rotation.x += deltaY / 1000;
     }
-    rotateCloud(deltaX = 2, deltaY = 2) {
+    rotateCloud(deltaX = 2, deltaY = 0) {
         this.cloud.rotation.y += deltaX / 1000;
         this.cloud.rotation.x += deltaY / 1000;
     }
-    rotateParticle(deltaX = 1, deltaY = 1) {
+    rotateParticle(deltaX = 1, deltaY = 0) {
         this.particles.rotation.y += deltaX / 1000
         this.particles.rotation.x += deltaY / 1000
     }
@@ -189,14 +198,14 @@ class render3D {
         var raycaster = new THREE.Raycaster();
         var mouse = new THREE.Vector2();
         var INTERSECTED
-        mouse.x = 0
-        mouse.y = 0
+        mouse.x = Math.round(800 / 2) / 800 * 2 - 1
+        mouse.y = -(Math.round(1600 / 2) / 1600) * 2 + 1
         raycaster.setFromCamera(mouse, this.camera);
         var earth = this.scene.getObjectByName('earth')
         var intersects = raycaster.intersectObjects([earth])
-        if (intersects.length > 0) {
-            this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
-        }
+        // if (intersects.length > 0) {
+        //     this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
+        // }
         var res = getVerWorldPos(this.particles)
         res.forEach(pos => {
             console.log(pos.distance = getDis(pos, intersects[0].point))
@@ -244,20 +253,18 @@ class render3D {
             z: 0
         })
         var deltaX = Math.asin(from.y / r)
-        var deltaY = Math.asin(( 5.57001407161917 - from.x ) / r)
-        // console.log(deltaX, deltaY)
-        console.log(from)
-        // console.log(from.x, from.y)
-        console.log(deltaY)
-        rs(deltaY*1000,deltaX*1000)
-        // rs(0, deltaY * 1000)
+        var deltaY = Math.asin((5.57001407161917 - from.x) / r)
+
+        rs(deltaY * 1000, deltaX * 1000)
+    }
+    animation() {
+        gsap.TweenMax.fr
     }
 
 
 
 
 }
-
 
 function _debounce(fn, wait) {
     var timer = null;
@@ -331,5 +338,9 @@ function getVerWorldPos(obj) {
 
 
 function getDis(a, b) {
-    return Math.sqrt(Math.pow(a.x - b.x, 2) + Math.pow(a.y - b.y, 2) + Math.pow(a.z - b.z, 2))
+    return Math.sqrt(
+        Math.pow(a.x - b.x, 2) +
+        Math.pow(a.y - b.y, 2) +
+        Math.pow(a.z - b.z, 2)
+    )
 }

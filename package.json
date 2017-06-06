@@ -16,6 +16,7 @@
   },
   "homepage": "https://github.com/kyjo2014/earthH5#readme",
   "dependencies": {
+    "@types/gsap": "^1.19.1",
     "@types/three": "^0.84.8"
   },
   "description": ""
