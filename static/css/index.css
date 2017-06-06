@@ -86,3 +86,10 @@ body {
     line-height: 150px;
     text-align: center;
 }
+
+.rotate-ctrl {
+    min-width: 30px;
+    height: 50px;
+    background-color: white;
+    display: inline-block;
+}

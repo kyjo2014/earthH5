@@ -19,6 +19,9 @@ class render3D {
         this.renderer.setPixelRatio(window.devicePixelRatio);
         this.renderer.setSize(640, 1280);
         this.renderer.render(this.scene, this.camera)
+        //自动旋转场景
+        this.autoRotate = true
+        this.overrideRotate = false
         // this.addEvent()
     }
     proxy(opt) {
@@ -85,6 +88,7 @@ class render3D {
 
         function onMouseDown(evt) {
             evt.preventDefault();
+            this.autoRotate = false
             mouseDown = true;
             mouseX = evt.clientX;
             mouseY = evt.clientY;
@@ -92,6 +96,7 @@ class render3D {
 
         function onMouseUp(evt) {
             evt.preventDefault();
+            this.autoRotate = true
             mouseDown = false;
         }
 
@@ -118,13 +123,23 @@ class render3D {
         bindEvent('body', 'mousedown', onMouseDown.bind(this))
         bindEvent('body', 'mousemove', onMouseMove.bind(this))
         bindEvent('.main-ctrl', 'click', _debounce(goToPlace.bind(this), 200))
+        bindEvent('.rotate-ctrl', 'click', function (e) {
+            e.stopPropagation()
+            this.overrideRotate = !this.overrideRotate
+        }.bind(this))
         // bindEvent('body', 'resize', onWindowResize.bind(this))
     }
     render() {
         requestAnimationFrame(this.render);
         // stats.begin();
         // this.addCube()
-        this.rotateScene()
+
+        if (this.autoRotate && this.overrideRotate) {
+            this.rotateScene()
+
+        }
+
+
         // stats.end();
         this.renderer.render(this.scene, this.camera);
     }
@@ -180,15 +195,15 @@ class render3D {
         raycaster.setFromCamera(mouse, this.camera);
         var earth = this.scene.getObjectByName('earth')
         var intersects = raycaster.intersectObjects([earth])
-        console.log(intersects)
-
         if (intersects.length > 0) {
-            this.addRay([new THREE.Vector3(0, -30, 60),intersects[0].point])
+            this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
         }
+        console.log(intersects, this.particles)
+        getVerWorldPos(this.particles)
     }
-    addRay(points = [new THREE.Vector3(-30, 39.8, 30),new THREE.Vector3(-30, 0, 0)]) {
+    addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
 
-        var second_earth = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 60,0.1);
+        var second_earth = new THREE.TubeGeometry(new THREE.SplineCurve3(points), 60, 0.1);
         var mat = new THREE.MeshBasicMaterial({
             color: 0xffffff,
             transparent: false
@@ -196,26 +211,6 @@ class render3D {
         this.second_earth = new THREE.Mesh(second_earth, mat)
         this.scene.add(this.second_earth)
     }
-    // testGeo() {
-    //     let testSphGeo = new THREE.SphereGeometry(33, 5, 5)
-    //     let sprite = new THREE.TextureLoader().lod("./static/texture/sprite/i_galapagos.png");
-    //     let material = new THREE.PointsMaterial({
-    //         size: 90,
-    //         sizeAttenuation: false,
-    //         map: sprite,
-    //         alphaTest: 0.5,
-    //         transparent: false
-    //     });
-
-    //     // material.color.setHSL(1.0, 0.3, 0.7);
-    //     let particles = new THREE.Points(testSphGeo, material);
-    //     console.log(testSphGeo.vertices)
-    //     particles.scale.x = 0.6
-    //     particles.scale.y = 0.6
-    //     particles.scale.z = 0.6
-    //     this.scene.add(particles);
-    // }
-
     getPosition(lng, lat, alt) {
         var phi = (90 - lat) * (Math.PI / 180),
             theta = (lng + 180) * (Math.PI / 180),
@@ -229,7 +224,10 @@ class render3D {
             z: z
         };
     }
-
+    addHelper() {
+        var axisHelper = new THREE.AxisHelper(100);
+        this.scene.add(axisHelper);
+    }
 
 
 
@@ -267,6 +265,7 @@ function initStage() {
     stage.addEarth()
     stage.addLight()
     stage.addCloud()
+    stage.addHelper()
     stage.addPoint([{
         lng: 113.257291,
         lat: 23.149415
@@ -286,4 +285,31 @@ function initStage() {
 function bindEvent(target, event, cb) {
     let doc = document
     doc.querySelector(target).addEventListener(event, cb)
+}
+
+/**
+ * 获得世界坐标
+ * 
+ * @param {any} obj 
+ * @returns 
+ */
+function getWorldPos(obj) {
+    obj.updateMatrixWorld();
+    var vec = new THREE.Vector3();
+    vec.setFromMatrixPosition(obj.matrixWorld);
+    return {
+        x: vec.x,
+        y: vec.y,
+        z: vec.z
+    }; // Like this?
+}
+
+function getVerWorldPos(obj) {
+    let geo = obj.geometry
+    let vertices = []
+    geo.vertices.forEach(vertice => {
+        console.log(vertice.clone().applyMatrix4(obj.matrixWorld))
+        vertices.push(vertice.clone().applyMatrix4(obj.matrixWorld))
+    })
+    return vertices
 }
