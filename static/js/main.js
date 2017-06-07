@@ -19,8 +19,8 @@ class render3D {
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
         //controls.enableDamping = true;
         //controls.dampingFactor = 0.25;
-        this.controls.rotateSpeed = 0.3;
-        this.controls.autoRotate = false;
+        this.controls.rotateSpeed = 1;
+        this.controls.autoRotate = true;
         this.controls.enableZoom = false;
         this.controls.enablePan = false;
         this.controls.enableZoom = false;
@@ -140,14 +140,12 @@ class render3D {
     }
     render() {
         requestAnimationFrame(this.render);
-        // stats.begin();
-        // this.addCube()
-
+        TWEEN.update();
         if (this.autoRotate && this.overrideRotate) {
-            this.rotateScene()
+            // this.rotateScene()
+            this.controls.update()
         }
 
-        // stats.end();
         this.renderer.render(this.scene, this.camera);
     }
     rotateScene(deltaX, deltaY) {
@@ -181,6 +179,7 @@ class render3D {
                 pointGeo.vertices.push(vertex)
             }
         }
+        // sprite.offset.set(-0.3,0)
         let material = new THREE.PointsMaterial({
             size: 30,
             sizeAttenuation: true,
@@ -203,21 +202,19 @@ class render3D {
         raycaster.setFromCamera(mouse, this.camera);
         var earth = this.scene.getObjectByName('earth')
         var intersects = raycaster.intersectObjects([earth])
-        // if (intersects.length > 0) {
-        //     this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
-        // }
-        var res = getVerWorldPos(this.particles)
+        if (intersects.length > 0) {
+            this.addRay([new THREE.Vector3(0, -30, 60), intersects[0].point])
+        }
+        var res = this.particles.geometry.vertices //getVerWorldPos(this.particles)
         res.forEach(pos => {
-            console.log(pos.distance = getDis(pos, intersects[0].point))
+            pos.distance = getDis(pos, intersects[0].point)
         })
         res.sort((a, b) => {
             return a.distance - b.distance
         })
-        this.rotatePlaceToMid(res[0])
-    
-        console.log(this.controls)
-        // this.controls.saveState()
-        this.scene.rotation.y ++
+        this.rotatePlaceToMid(res[0], intersects[0].point)
+
+
 
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
@@ -247,20 +244,63 @@ class render3D {
         var axisHelper = new THREE.AxisHelper(100);
         this.scene.add(axisHelper);
     }
-    rotatePlaceToMid(from) {
-        let rs = this.rotateScene.bind(this)
-        let r = getDis(from, {
-            x: 0,
-            y: 0,
-            z: 0
-        })
-        var deltaX = Math.asin(from.y / r)
-        var deltaY = Math.asin((5.57001407161917 - from.x) / r)
+    rotatePlaceToMid(from, to) {
+        //采用摄像机不动，只转动地球时候才使用的对准方法
+        // let rs = this.rotateScene.bind(this)
+        // let r = getDis(from, to)
 
-        rs(deltaY * 1000, deltaX * 1000)
+        // var deltaX = Math.asin(from.y / r)
+        // var deltaY = Math.asin((5.57001407161917 - from.x) / r)
+        var initPos = this.controls.position0.clone()
+        var offsetX = 5 //抵消顶点在贴图中央进行的X轴方向偏移
+        var offsetZ = 0 //抵消顶点在贴图中央进行的z轴方向偏移
+        var preX = 0
+        var preY = 0
+        var tween = new TWEEN.Tween({
+            deltaX: initPos.x,
+            deltaY: initPos.y
+        })
+        this.autoRotate = false //暂停摄像机自动滚动
+        //使用applyAxisAngle接口可以对摄像机直接进行绕轴旋转计算
+        tween.to({
+            // x: (from.x + offsetX) * 5,
+            // y: from.y * 5,
+            // z: (from.z + offsetZ) * 5
+            deltaX: 180,
+            deltaY: -90
+        }, 10000);
+        tween.start()
+        var __ctrl = this.controls
+        tween.onUpdate(function (e) {
+            //__ctrl.reset()
+            rotateCam(this.deltaX, this.deltaY)
+
+        });
+
+        var rotateCam = (deltaX, deltaY) => {
+            var base = initPos.clone()
+            base.applyAxisAngle(
+                (new THREE.Vector3(30, 0, 0)).normalize(),
+                deltaY / 180 * Math.PI)
+            base.applyAxisAngle(
+                (new THREE.Vector3(0, 30, 0)).normalize(),
+                deltaX / 180 * Math.PI)
+            this
+                .controls
+                .position0 = base
+
+
+
+            this.controls.reset()
+        }
+        // this.controls.position0 = new THREE.Vector3(,
+        //     from.y * 5,
+
+        // )
+        // rs(deltaY * 1000, deltaX * 1000)
     }
     animation() {
-        gsap.TweenMax.fr
+
     }
 
 
