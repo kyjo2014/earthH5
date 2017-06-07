@@ -212,9 +212,9 @@ class render3D {
         res.sort((a, b) => {
             return a.distance - b.distance
         })
-        this.rotatePlaceToMid(res[0], intersects[0].point)
-
-
+        this.rotatePlaceToMid(intersects[0].point,res[0])
+        // console.log((new THREE.Vector3(1, 1, 1)).angleTo((new THREE.Vector3(1, 0, 0))))
+        // console.log((new THREE.Plane()).setFromCoplanarPoints(new THREE.Vector3(1, 0, 0), new THREE.Vector3(0, 0, 0), new THREE.Vector3(0, 0, 1)))
 
     }
     addRay(points = [new THREE.Vector3(-30, 39.8, 30), new THREE.Vector3(-30, 0, 0)]) {
@@ -257,9 +257,13 @@ class render3D {
         var preX = 0
         var preY = 0
         var tween = new TWEEN.Tween({
-            deltaX: initPos.x,
-            deltaY: initPos.y
+            deltaX: 0,
+            deltaY: 0,
+            angle: 0
         })
+        to.
+        var rotateAxis = (new THREE.Plane()).setFromCoplanarPoints(new THREE.Vector3(0, 0, 0), from, to).normal
+        console.log(rotateAxis)
         this.autoRotate = false //暂停摄像机自动滚动
         //使用applyAxisAngle接口可以对摄像机直接进行绕轴旋转计算
         tween.to({
@@ -267,16 +271,21 @@ class render3D {
             // y: from.y * 5,
             // z: (from.z + offsetZ) * 5
             deltaX: 180,
-            deltaY: -90
+            deltaY: -90,
+            angle: from.angleTo(to)
         }, 10000);
         tween.start()
         var __ctrl = this.controls
         tween.onUpdate(function (e) {
             //__ctrl.reset()
-            rotateCam(this.deltaX, this.deltaY)
-
+            // rotateCam(this.deltaX, this.deltaY)
+            var pos = initPos.clone()
+            
+            __ctrl.position0 = pos.applyAxisAngle(rotateAxis,this.angle)
+           
+            __ctrl.reset()
         });
-
+        var __ctrl = this.controls
         var rotateCam = (deltaX, deltaY) => {
             var base = initPos.clone()
             base.applyAxisAngle(
@@ -288,9 +297,6 @@ class render3D {
             this
                 .controls
                 .position0 = base
-
-
-
             this.controls.reset()
         }
         // this.controls.position0 = new THREE.Vector3(,
@@ -380,9 +386,10 @@ function getVerWorldPos(obj) {
 
 
 function getDis(a, b) {
-    return Math.sqrt(
-        Math.pow(a.x - b.x, 2) +
-        Math.pow(a.y - b.y, 2) +
-        Math.pow(a.z - b.z, 2)
-    )
+    return a.distanceTo(b)
+    // return Math.sqrt(
+    //     Math.pow(a.x - b.x, 2) +
+    //     Math.pow(a.y - b.y, 2) +
+    //     Math.pow(a.z - b.z, 2)
+    // )
 }
